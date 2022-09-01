@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { Post } from "../Entities/posts";
-import { Tag } from "../Entities/tags";
+import { Post } from "../Entities/post";
+import { Tag } from "../Entities/tag";
 const router = Router();
 //Get all tags
 router.get('/', async (req, res) => {
@@ -25,21 +25,22 @@ router.post('/', async (req, res) => {
     } catch (error) {
         res.status(500).json({ msg: error });
         console.log(error)
-    }})
+    }
+})
 export default router
 //Link a tag to a post
-router.post('/:tagId/:postId/link', async (req,res)=>{
+router.post('/:tagId/:postId/link', async (req, res) => {
     try {
-        const tagId=+req.params.tagId
-        const postId=+req.params.postId
-        const tag = await Tag.findOne({where:{id:tagId}})
-        const post = await Post.findOne({where:{id:postId}, relations:{tags:true}})
-        if (post){
+        const tagId = +req.params.tagId
+        const postId = +req.params.postId
+        const tag = await Tag.findOne({ where: { id: tagId } })
+        const post = await Post.findOne({ where: { id: postId }, relations: { tags: true } })
+        if (post) {
             console.log(post)
-             post.tags.push(tag!)
-             await post.save()
+            post.tags.push(tag!)
+            await post.save()
         }
-        res.json({post})
+        res.json({ post })
     } catch (error) {
         res.status(500).json({ msg: error });
     }

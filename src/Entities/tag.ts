@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BaseEntity, ManyToOne, OneToMany, JoinColumn, ManyToMany, JoinTable } from "typeorm"
-import { Post } from "./posts";
+import { Post } from "./post";
 
 
 @Entity()
@@ -14,10 +14,10 @@ export class Tag extends BaseEntity {
     // postId: number;
 
     @CreateDateColumn({
-        default: ()=> 'current_timestamp(6)'
+        default: () => 'current_timestamp(6)'
     })
     createdAt: Date;
 
-    @ManyToMany(()=> Post)
+    @ManyToMany(() => Post)
     posts: Post[]
 }

@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BaseEntity, ManyToOne, JoinColumn } from "typeorm"
-import { Post } from "./posts";
-import { User } from "./users";
+import { Post } from "./post";
+import { User } from "./user";
 
 @Entity()
 export class Comment extends BaseEntity {
@@ -8,13 +8,10 @@ export class Comment extends BaseEntity {
     id: number;
 
     @Column()
-    userId: number;
-
-    @Column()
-    postId: number;
-
-    @Column()
     body: string;
+
+    @Column()
+    userId:number
 
     @CreateDateColumn({
         default: () => 'current_timestamp(6)'
@@ -27,12 +24,7 @@ export class Comment extends BaseEntity {
     })
     updatedAt: Date;
 
-    @ManyToOne(() => User, user => user.comments, { nullable: false })
-    @JoinColumn({ name: "userId" })
-    user: User;
-
     @ManyToOne(() => Post, post => post.comments, { nullable: false })
-    @JoinColumn({ name: "postId" })
     post: Post;
 
 

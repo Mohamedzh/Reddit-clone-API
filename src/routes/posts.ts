@@ -1,23 +1,23 @@
 import { Router } from "express";
-import { Post } from "../Entities/posts";
-import { Comment } from '../Entities/comments'
+import { Post } from "../Entities/post";
+import { Comment } from '../Entities/comment'
 import { Vote } from "../Entities/vote";
 import { postDetails } from "../utilities";
-import { Tag } from "../Entities/tags";
-import { User } from "../Entities/users";
+import { Tag } from "../Entities/tag";
+import { User } from "../Entities/user";
 import { In } from "typeorm";
 
 const router = Router();
 //Get all posts
 router.get('/', async (req, res) => {
-    const posts = await Post.find({ relations: { comments: true, votes: true,tags: true} });
+    const posts = await Post.find({ relations: { comments: true, votes: true, tags: true } });
     const detailedPosts = posts.map(postDetails)
     res.json({ data: detailedPosts })
 })
 // Get a specific post by id
 router.get('/:id', async (req, res) => {
     const id = +(req.params.id)
-    const post = await Post.findOne({where: {id: id }, relations: {comments: true, votes: true, tags: true}});
+    const post = await Post.findOne({ where: { id }, relations: { comments: true, votes: true, tags: true } });
     const detailedPost = postDetails(post!);
     res.json({ data: detailedPost })
 })
@@ -29,11 +29,7 @@ router.post('/', async (req, res) => {
             userId,
             tagIds,
         } = req.body;
-        const user = User.findOne({where:{id: userId}})
-        if (!user){
-            res.status(404).json({msg:'No such user, please enter a valid user'})
-        }
-        const tags = await Tag.find({where:{id: In(tagIds)}})
+        const tags = await Tag.find({ where: { id: In(tagIds) } })
         const post = Post.create({
             title,
             body,
@@ -64,14 +60,13 @@ router.delete('/:id', async (req, res) => {
 router.post('/:id/comments', async (req, res) => {
     try {
         const id = +(req.params.id)
-
+        const { userId, body } = req.body
         const comment = Comment.create({
-            userId: req.body.userId,
-            body: req.body.body,
+            userId,
+            body,
             post: { id }
         })
         await comment.save();
-        // Post.update({})
         res.json({ data: "comment created successfully" })
     } catch (error) {
         res.status(500).json({ msg: error });
@@ -88,7 +83,7 @@ router.get('/:id/comments', async (req, res) => {
 //Delete a comment
 router.delete('/:postid/comments/:id', async (req, res) => {
     try {
-        const postid = +(req.params.postid)
+        const postId = +(req.params.postid)
         const id = +(req.params.id)
         const comment = await Comment.delete({ id });
         console.log(comment)
@@ -102,31 +97,32 @@ router.post('/:id/votes', async (req, res) => {
     try {
         const postId = +req.params.id
         const userId = req.body.userId
-        const vote = await Vote.findOne({where:{
-            user: {id: userId},
-            post: { id: postId }
-    }})
-    console.log(vote)
-    if (!vote){
+        const vote = await Vote.findOne({
+            where: {
+                userId,
+                post: { id: postId }
+            }
+        })
+        console.log(vote)
+        if (!vote) {
             const newVote = Vote.create({
-                userId: req.body.userId,
+                userId,
                 value: req.body.value,
                 post: { id: postId }
             })
             await newVote.save()
             res.json({ data: "Vote created successfully" })
-
-        // }
-    } else if (req.body.value === 1 || req.body.value === -1) {
-        //  {
-        const updatedVote = Vote.update(vote.id, {
-            userId: req.body.userId,
-                value: req.body.value,
-                post: { id: postId }
-        })
-            res.status(500).json({ data: "Updating user vote..." })
-    } else {
-            res.status(500).json({ data: "Invalid vote value" })}
+        } else
+            if (req.body.value === 1 || req.body.value === -1) {
+                const updatedVote = Vote.update(vote.id, {
+                    userId: req.body.userId,
+                    value: req.body.value,
+                    post: { id: postId }
+                })
+                res.status(500).json({ data: "Updating user vote..." })
+            } else {
+                res.status(500).json({ data: "Invalid vote value" })
+            }
     } catch (error) {
         res.status(500).json({ msg: error });
     }
@@ -136,7 +132,7 @@ router.post('/:id/votes', async (req, res) => {
 router.delete('/:postId/votes/', async (req, res) => {
     try {
         const newPostId = +(req.params.postId)
-        const vote = await Vote.delete({ value:req.body.userId, postId: newPostId, userId:req.body.userId });
+        const vote = await Vote.delete({ value: req.body.userId, post: { id: newPostId }, userId: req.body.userId });
         console.log(vote)
         res.json({ data: "Vote deleted successfully" })
     } catch (error) {

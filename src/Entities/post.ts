@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BaseEntity, ManyToOne, OneToMany, JoinColumn, ManyToMany, JoinTable } from "typeorm"
-import { Comment } from "./comments";
+import { Comment } from "./comment";
 import { Vote } from "./vote";
-import { User } from "./users";
-import { Tag } from "./tags";
+import { User } from "./user";
+import { Tag } from "./tag";
 
 
 @Entity()
@@ -11,13 +11,13 @@ export class Post extends BaseEntity {
     id: number;
 
     @Column()
+    userId:number
+
+    @Column()
     title: string;
 
     @Column()
     body: string;
-
-    @Column()
-    userId:number;
 
     @CreateDateColumn({
         default: ()=> 'current_timestamp(6)'
@@ -29,10 +29,6 @@ export class Post extends BaseEntity {
         onUpdate:  "current_timestamp(6)"
     })
     updatedAt: Date;
-
-    @ManyToOne(()=> User, user => user.posts, {nullable: false})
-    @JoinColumn({name:"userId"})
-    user: User;
 
     @OneToMany(()=> Comment, comment => comment.post)
     comments: Comment[];

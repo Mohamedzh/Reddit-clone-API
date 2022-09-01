@@ -20,17 +20,15 @@ app.use(urlencoded({ extended: false }));
 app.use('/posts', postsRouter)
 app.use('/users', usersRouter);
 app.use('/tags', tagsRouter);
-// app.get('/', (req, res) => {
-//     res.json({msg: "it's alive"})
-// })
+
 
 app.listen(process.env.port, async () => {
     console.log("listening on port " + process.env.port)
     try {
         await AppDataSource.initialize()
-        console.log("DB connection established" )
+        console.log("DB connection established")
     }
     catch (e) {
-        throw new Error (`error occured: ${e as Error}`)
+        throw new Error(`error occured: ${e as Error}`)
     }
 })  
