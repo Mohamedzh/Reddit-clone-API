@@ -21,6 +21,7 @@ app.use('/posts', postsRouter)
 app.use('/users', usersRouter);
 app.use('/tags', tagsRouter);
 
+app.get('/', (req,res)=>res.send('API for reddit clone app'))
 
 app.listen(process.env.port, async () => {
     console.log("listening on port " + process.env.port)
