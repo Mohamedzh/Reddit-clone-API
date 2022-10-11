@@ -23,7 +23,7 @@ app.use('/tags', tagsRouter);
 
 app.get('/', (req,res)=>res.send('API for reddit clone app'))
 
-app.listen(process.env.port, async () => {
+app.listen(process.env.PORT || 5000, async () => {
     console.log("listening on port " + process.env.port)
     try {
         await AppDataSource.initialize()
