@@ -8,7 +8,7 @@ import { User } from "../Entities/user";
 import { In } from "typeorm";
 
 const router = Router();
-//Get all posts
+
 router.get('/', async (req, res) => {
     /*
     #swagger.tags = ['Posts']
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     try {
         const posts = await Post.find({ relations: { comments: true, votes: true, tags: true } });
         const detailedPosts = posts.map(postDetails)
-        res.status(200).json({ data: detailedPosts })
+        res.status(200).json({ data: posts })
     } catch (error) {
         res.status(500).json({ data: error })
     }
