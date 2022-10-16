@@ -213,7 +213,7 @@ router.post('/:id/votes', async (req, res) => {
                     value: req.body.value,
                     post: { id: postId }
                 })
-                res.status(500).json({ data: "Updating user vote..." })
+                res.status(200).json({ data: "Updating user vote..." })
             } else {
                 res.status(500).json({ data: "Invalid vote value" })
             }
