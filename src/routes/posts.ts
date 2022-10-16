@@ -10,19 +10,50 @@ import { In } from "typeorm";
 const router = Router();
 //Get all posts
 router.get('/', async (req, res) => {
-    const posts = await Post.find({ relations: { comments: true, votes: true, tags: true } });
-    const detailedPosts = posts.map(postDetails)
-    res.json({ data: detailedPosts })
+    /*
+    #swagger.tags = ['Posts']
+    #swagger.summary = 'Get all posts'
+    */
+    try {
+        const posts = await Post.find({ relations: { comments: true, votes: true, tags: true } });
+        const detailedPosts = posts.map(postDetails)
+        res.status(200).json({ data: detailedPosts })
+    } catch (error) {
+        res.status(500).json({ data: error })
+    }
 })
 // Get a specific post by id
 router.get('/:id', async (req, res) => {
-    const id = +(req.params.id)
-    const post = await Post.findOne({ where: { id }, relations: { comments: true, votes: true, tags: true } });
-    const detailedPost = postDetails(post!);
-    res.json({ data: detailedPost })
+    /*
+    #swagger.tags = ['Posts']
+    #swagger.summary = 'Get a specific post by id'
+    #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'Post id',
+    }
+    */
+    try {
+        const id = +(req.params.id)
+        const post = await Post.findOne({ where: { id }, relations: { comments: true, votes: true, tags: true } });
+        const detailedPost = postDetails(post!);
+        res.status(200).json({ data: detailedPost })
+    } catch (error) {
+        res.status(500).json({ data: error })
+    }
 })
-//Post a new post
+
 router.post('/', async (req, res) => {
+    /*
+   #swagger.tags = ['Posts']
+   #swagger.summary = 'Post a new post'
+   #swagger.parameters['title',
+           'body',
+           'userId',
+           'tagIds'] = {
+       in: 'body',
+       description: 'The post data',
+   }
+   */
     try {
         const { title,
             body,
@@ -37,27 +68,44 @@ router.post('/', async (req, res) => {
             tags
         })
         await post.save();
-        res.json({ data: `Post created successfully` })
+        res.status(200).json({ data: `Post created successfully` })
     } catch (error) {
         res.status(500).json({ msg: error });
-        console.log(error)
     }
 
 })
-//Delete a specific post by id
+
 router.delete('/:id', async (req, res) => {
+    /*
+    #swagger.tags = ['Posts']
+    #swagger.summary = 'Delete a specific post by id'
+    #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'Post id',
+    }
+    */
     try {
         const id = +(req.params.id)
         const post = await Post.delete({ id });
-        console.log(post)
-        res.json({ data: "Post deleted successfully" })
+        res.status(200).json({ data: "Post deleted successfully" })
     } catch (error) {
         res.status(500).json({ msg: error });
     }
 })
 
-//Post a new comment
 router.post('/:id/comments', async (req, res) => {
+    /*
+   #swagger.tags = ['Comments']
+   #swagger.summary = 'Post a new comment'
+   #swagger.parameters['body', 'userId'] = {
+       in: 'body',
+       description: 'The comment data',
+   }
+   #swagger.parameters['id'] = {
+       in: 'path',
+       description: 'The id of the post to comment on',
+   }
+   */
     try {
         const id = +(req.params.id)
         const { userId, body } = req.body
@@ -72,42 +120,88 @@ router.post('/:id/comments', async (req, res) => {
         res.status(500).json({ msg: error });
     }
 })
-//Get all comments for a specific post-------
+
 router.get('/:id/comments', async (req, res) => {
-    const id = +(req.params.id)
-    const comments = await Comment.find({ where: { post: { id } } });
-    res.json({ data: comments })
+    /*
+    #swagger.tags = ['Comments']
+    #swagger.summary = 'Get all comments for a specific post by post id'
+    #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'Post id',
+    }
+    */
+    try {
+        const id = +(req.params.id)
+        const comments = await Comment.find({ where: { post: { id } } });
+        res.status(200).json({ data: comments })
+    } catch (error) {
+        res.status(500).json({ msg: error });
+    }
 })
 
-
-//Delete a comment
 router.delete('/:postid/comments/:id', async (req, res) => {
+    /*
+   #swagger.tags = ['Comments']
+   #swagger.summary = 'Delete a comment'
+   #swagger.parameters['id'] = {
+       in: 'path',
+       description: 'The id of the comment to delete',
+   }
+   #swagger.parameters['postid'] = {
+       in: 'path',
+       description: 'The id of the post containing the comment',
+   }
+   */
     try {
         const postId = +(req.params.postid)
         const id = +(req.params.id)
         const comment = await Comment.delete({ id });
-        console.log(comment)
         res.json({ data: "Comment deleted successfully" })
     } catch (error) {
         res.status(500).json({ msg: error });
     }
 })
-//Voting
+
+
+
 router.post('/:id/votes', async (req, res) => {
+    /*
+  #swagger.tags = ['Votes']
+  #swagger.summary = 'Post a vote'
+  #swagger.parameters['value'] = {
+      in: 'body',
+      description: 'The vote value, 1 for upvote & -1 for downvote',
+      required: true,
+      type: 'number',
+      format:'int64',
+      schema: '1'
+  }
+  #swagger.parameters['userId'] = {
+      in: 'body',
+      description: 'The id of the voting user',
+      required: true,
+      type: 'string',
+      schema: '1'
+  }
+  #swagger.parameters['id'] = {
+       in: 'path',
+       description: 'The id of the post to vote on',
+   }
+  */
     try {
         const postId = +req.params.id
         const userId = req.body.userId
+        const { value } = req.body
         const vote = await Vote.findOne({
             where: {
                 userId,
                 post: { id: postId }
             }
         })
-        console.log(vote)
         if (!vote) {
             const newVote = Vote.create({
                 userId,
-                value: req.body.value,
+                value,
                 post: { id: postId }
             })
             await newVote.save()
@@ -130,11 +224,34 @@ router.post('/:id/votes', async (req, res) => {
 
 
 router.delete('/:postId/votes/', async (req, res) => {
+    /*
+  #swagger.tags = ['Votes']
+  #swagger.summary = 'Post a vote'
+  #swagger.parameters['value'] = {
+      in: 'body',
+      description: 'The vote value, 1 for upvote & -1 for downvote',
+      required: true,
+      type: 'number',
+      format:'int64',
+      schema: '1'
+  }
+  #swagger.parameters['userId'] = {
+      in: 'body',
+      description: 'The id of the voting user',
+      required: true,
+      type: 'string',
+      schema: '1'
+  }
+  #swagger.parameters['postId'] = {
+       in: 'path',
+       description: 'The id of the post containing the vote',
+   }
+  */
     try {
+        const { value, userId } = req.body
         const newPostId = +(req.params.postId)
-        const vote = await Vote.delete({ value: req.body.userId, post: { id: newPostId }, userId: req.body.userId });
-        console.log(vote)
-        res.json({ data: "Vote deleted successfully" })
+        const vote = await Vote.delete({ value, post: { id: newPostId }, userId });
+        res.status(200).json({ data: "Vote deleted successfully" })
     } catch (error) {
         res.status(500).json({ msg: error });
     }

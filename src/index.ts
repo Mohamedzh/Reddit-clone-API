@@ -8,6 +8,9 @@ import AppDataSource from './data-source';
 import postsRouter from './routes/posts';
 import usersRouter from './routes/users';
 import tagsRouter from './routes/tags'
+import swaggerUi from 'swagger-ui-express'
+const swaggerFile = require('../swagger-output.json')
+
 
 const app = express();
 
@@ -21,7 +24,7 @@ app.use('/posts', postsRouter)
 app.use('/users', usersRouter);
 app.use('/tags', tagsRouter);
 
-app.get('/', (req,res)=>res.send('API for reddit clone app'))
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.listen(process.env.PORT || 5000, async () => {
     console.log("listening on port " + process.env.port)
