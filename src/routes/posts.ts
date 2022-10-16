@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     try {
         const posts = await Post.find({ relations: { comments: true, votes: true, tags: true } });
         const detailedPosts = posts.map(postDetails)
-        res.status(200).json({ data: posts })
+        res.status(200).json({ data: detailedPosts })
     } catch (error) {
         res.status(500).json({ data: error })
     }
